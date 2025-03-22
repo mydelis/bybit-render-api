@@ -62,27 +62,33 @@ const fetchAdList = async () => {
 app.get('/fetch-price', async (req, res) => {
   try {
     const sellRates = await fetchAdList();
-    const prices = sellRates.map(ad => parseFloat(ad.price));
 
-    // 🧹 Filter out prices that are clearly too low/high (adjust as needed)
-    const filtered = prices.filter(p => p > 100 && p < 2000); // adjust range based on typical prices
+    // 1. Extract numeric prices
+    const prices = sellRates
+      .map(ad => parseFloat(ad.price))
+      .filter(p => !isNaN(p));
 
-    // ✅ Sort descending, take top 20
-    const topPrices = filtered.sort((a, b) => b - a).slice(0, 20);
+    // 2. Optional: Remove outliers (simple bounds — adjust as needed)
+    const filtered = prices.filter(p => p > 100 && p < 2000);
 
-    if (topPrices.length === 0) {
-      return res.status(200).json({ averagePrice: null, note: "No valid prices found" });
+    // 3. Sort high to low
+    const sorted = filtered.sort((a, b) => b - a);
+
+    // 4. Take top 20 prices
+    const top20 = sorted.slice(0, 20);
+
+    // 5. Calculate average
+    if (top20.length === 0) {
+      return res.status(200).json({ averagePrice: null, note: 'No valid prices found' });
     }
 
-    const averagePrice = topPrices.reduce((sum, p) => sum + p, 0) / topPrices.length;
+    const averagePrice = top20.reduce((sum, p) => sum + p, 0) / top20.length;
 
-    res.json({
-      averagePrice,
-      count: topPrices.length,
-    });
+    // 6. Return just the number
+    res.json({ averagePrice });
+
   } catch (err) {
     console.error('❌ Error:', err.response?.data || err.message);
     res.status(500).send('Failed to fetch average price');
   }
 });
-
