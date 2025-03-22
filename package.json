@@ -7,7 +7,6 @@
     },
     "dependencies": {
       "axios": "^1.5.0",
-      "bybit-api": "^2.0.0",
       "crypto": "^1.0.1",
       "express": "^4.18.2"
     }
