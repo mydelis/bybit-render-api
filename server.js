@@ -1,7 +1,8 @@
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
-const { RestClientV5 } = require('bybit-api');
+const RestClientV5 = require('bybit-api').RestClientV5.default;
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,7 +11,8 @@ const PORT = process.env.PORT || 3000;
 const apiKey = process.env.BYBIT_API_KEY;
 const apiSecret = process.env.BYBIT_API_SECRET;
 
-const client = new RestClientV5.default({ testnet: true });
+const client = new RestClientV5({ testnet: true });
+
 
 
 const createSignature = (timestamp, body, secret) => {
