@@ -10,7 +10,8 @@ const PORT = process.env.PORT || 3000;
 const apiKey = process.env.BYBIT_API_KEY;
 const apiSecret = process.env.BYBIT_API_SECRET;
 
-const client = new RestClientV5({ testnet: true });
+const client = new RestClientV5.default({ testnet: true });
+
 
 const createSignature = (timestamp, body, secret) => {
   const rawRequestBody = JSON.stringify(body);
