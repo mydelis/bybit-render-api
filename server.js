@@ -62,18 +62,27 @@ const fetchAdList = async () => {
 app.get('/fetch-price', async (req, res) => {
   try {
     const sellRates = await fetchAdList();
-    res.json({ sellRates });
+    const prices = sellRates.map(ad => parseFloat(ad.price));
+
+    // 🧹 Filter out prices that are clearly too low/high (adjust as needed)
+    const filtered = prices.filter(p => p > 100 && p < 2000); // adjust range based on typical prices
+
+    // ✅ Sort descending, take top 20
+    const topPrices = filtered.sort((a, b) => b - a).slice(0, 20);
+
+    if (topPrices.length === 0) {
+      return res.status(200).json({ averagePrice: null, note: "No valid prices found" });
+    }
+
+    const averagePrice = topPrices.reduce((sum, p) => sum + p, 0) / topPrices.length;
+
+    res.json({
+      averagePrice,
+      count: topPrices.length,
+    });
   } catch (err) {
     console.error('❌ Error:', err.response?.data || err.message);
-    res.status(500).send('Failed to fetch sell rates');
+    res.status(500).send('Failed to fetch average price');
   }
 });
 
-// Health check route
-app.get('/', (req, res) => {
-  res.send('✅ Server is running!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
