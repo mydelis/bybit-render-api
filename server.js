@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
-const { RestClientV5 } = require('bybit-api');
+const RestClientV5 = require('bybit-api').RestClientV5?.default || require('bybit-api').RestClientV5;
 
 
 const app = express();
@@ -12,7 +12,7 @@ const apiKey = process.env.BYBIT_API_KEY;
 const apiSecret = process.env.BYBIT_API_SECRET;
 
 const client = new RestClientV5({
-  testnet: true
+  testnet: true,
 });
 
 
