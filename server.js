@@ -72,7 +72,8 @@ app.get('/fetch-price', async (req, res) => {
     const filtered = prices.filter(p => p > 100 && p < 2000);
 
     // 3. Sort high to low
-    const sorted = filtered.sort((a, b) => b - a);
+    const sorted = filtered.sort((a, b) => a - b);
+
 
     // 4. Take top 20 prices
     const top20 = sorted.slice(0, 20);
