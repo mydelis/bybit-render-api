@@ -5,25 +5,25 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Secure keys from environment
+// ✅ Securely load Bybit API keys from environment
 const apiKey = process.env.BYBIT_API_KEY;
 const apiSecret = process.env.BYBIT_API_SECRET;
 
-// 🔁 Fetch Bybit Server Time (without SDK)
+// 🔁 Fetch server time from Bybit
 const fetchServerTime = async () => {
   const response = await axios.get('https://api.bybit.com/v5/market/time');
   const serverTimeNano = response.data.result.timeNano;
   return Math.floor(parseInt(serverTimeNano) / 1000000); // Convert to ms
 };
 
-// 🔐 Create HMAC SHA256 signature
+// 🔐 Generate signature
 const createSignature = (timestamp, body, secret) => {
   const rawRequestBody = JSON.stringify(body);
   const str = `${timestamp}${apiKey}5000${rawRequestBody}`;
   return crypto.createHmac('sha256', secret).update(str).digest('hex');
 };
 
-// 📈 Fetch ad listings from Bybit P2P
+// 🧾 Fetch P2P ads from Bybit
 const fetchAdList = async () => {
   const timestamp = await fetchServerTime();
 
@@ -38,7 +38,7 @@ const fetchAdList = async () => {
     'X-BAPI-API-KEY': apiKey,
     'X-BAPI-TIMESTAMP': timestamp.toString(),
     'X-BAPI-RECV-WINDOW': '5000',
-    'X-BAPI-SIGN': createSignature(timestamp, body, apiSecret),
+    'X-BAPI-SIGN': createSignature(timestamp.toString(), body, apiSecret),
   };
 
   const response = await axios.post(
@@ -58,15 +58,20 @@ const fetchAdList = async () => {
   }));
 };
 
-// 🛠️ Route to trigger ad fetching
+// ✅ API Endpoint
 app.get('/fetch-price', async (req, res) => {
   try {
     const sellRates = await fetchAdList();
     res.json({ sellRates });
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Failed to fetch rates');
+    console.error('❌ Error:', err.response?.data || err.message);
+    res.status(500).send('Failed to fetch sell rates');
   }
+});
+
+// Health check route
+app.get('/', (req, res) => {
+  res.send('✅ Server is running!');
 });
 
 app.listen(PORT, () => {
